@@ -1,0 +1,47 @@
+name: Java (API CD)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Java version
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+
+    - name: Build with Maven
+      run: mvn package -B
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E0BF928BA488493A9240BD4B8F5F027A }}
+
+    - name: Build and push Docker image to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: containers1352353256.azurecr.io
+        username: ${{ secrets.containers1352353256 }}
+        password: ${{ secrets.1O5wEQtgCQgXKZ9iLQnzKFc+15fC9qlhYxOdpbWo1++ACRBNPG91 }}
+      env:
+        DOCKER_BUILDKIT: 1
+      run: |
+        docker build --build-arg JAR_FILE=target/*.jar -t containers1352353256.azurecr.io/my-java-api:${{ github.sha }} .
+        docker push containers1352353256.azurecr.io/my-java-api:${{ github.sha }}
+
+    - name: Configure Azure Web App settings
+      uses: Azure/webapps-container-deploy@v2
+      with:
+        app-name: intens-api-2023
+        images: containers1352353256.azurecr.io/my-java-api:${{ github.sha }}
+        resource-group: devops-project
+      env:
+        DOCKER_BUILDKIT: 1
