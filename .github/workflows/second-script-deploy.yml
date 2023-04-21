@@ -40,7 +40,7 @@ jobs:
         docker push containers1352353256.azurecr.io/my-java-api:${{ github.sha }}
 
     - name: Configure Azure Web App settings
-      uses: azure/webapps-container-deploy@v2.4.0
+      uses: azure/webapps-container-deploy@v1.2.0
       with:
         app-name: intens-api-2023
         images: containers1352353256.azurecr.io/my-java-api:${{ github.sha }}
